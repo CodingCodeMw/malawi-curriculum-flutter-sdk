@@ -1,0 +1,9 @@
+.dart_tool/
+.packages
+.pub/
+build/
+coverage/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+linux/flutter/ephemeral
+web/flutter_service_worker.js
