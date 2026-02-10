@@ -25,9 +25,9 @@ void main() {
         final levels = await client.getLevels();
         expect(levels, isA<List<String>>());
         expect(levels.isNotEmpty, true);
-        print('✅ Levels found: ${levels.length}');
+        print('Levels found: ${levels.length}');
       } catch (e) {
-        print('⚠️ Skipped (Server likely overlapping/offline): $e');
+        print('Skipped (Server likely overlapping/offline): $e');
       }
     });
 
@@ -36,9 +36,9 @@ void main() {
         final subjects = await client.getSubjects();
         expect(subjects, isA<List<dynamic>>());
         expect(subjects.isNotEmpty, true);
-        print('✅ Subjects found: ${subjects.length}');
+        print('Subjects found: ${subjects.length}');
       } catch (e) {
-        print('⚠️ Skipped: $e');
+        print('Skipped: $e');
       }
     });
 
@@ -47,9 +47,9 @@ void main() {
         final resources = await client.getResources(limit: 5);
         expect(resources, isA<List<dynamic>>());
         // We might not have data, but it should not error
-        print('✅ Resources fetched: ${resources.length}');
+        print('Resources fetched: ${resources.length}');
       } catch (e) {
-        print('⚠️ Skipped: $e');
+        print('Skipped: $e');
       }
     });
   });

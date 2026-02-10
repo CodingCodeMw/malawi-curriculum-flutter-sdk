@@ -1,4 +1,4 @@
-# Malawi Curriculum API - Flutter SDK 🇲🇼
+# Malawi Curriculum API - Flutter SDK
 
 A Flutter/Dart client for accessing the Malawi Curriculum API.
 
