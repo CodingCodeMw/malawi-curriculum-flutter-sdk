@@ -250,22 +250,24 @@ try {
 
 ## Rate Limits & Plans
 
+Different subscription tiers provide varying levels of access. Visit the [developer portal](https://malawi-curricular-api-production.up.railway.app) for current pricing.
+
 ### Free Plan
 - 100 requests/day
 - Metadata access only
 - No file downloads
 
-### Basic Plan (20,000 MWK/month)
+### Basic Plan
 - 1,000 requests/day
 - 5 downloads/day
 - Full API access
 
-### Pro Plan (15,000 MWK/month)
+### Pro Plan
 - 10,000 requests/day
 - 100 downloads/day
 - Priority support
 
-### Enterprise Plan (150,000 MWK/month)
+### Enterprise Plan
 - 100,000 requests/day
 - 1,000 downloads/day
 - 24/7 support
