@@ -35,6 +35,26 @@ class MalawiCurriculumClient {
     return parser(json);
   }
 
+  /// Helper for authenticated POST requests
+  Future<Map<String, dynamic>> _post(String endpoint, Map<String, dynamic> body) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+
+    final response = await _client.post(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('API Error ${response.statusCode}: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   /// Get filtered resources
   Future<List<Resource>> getResources({
     String? level,
@@ -71,14 +91,67 @@ class MalawiCurriculumClient {
   Future<List<String>> getLevels() async {
     return _get('/levels', {}, (json) {
       final List data = json['data'];
-      // Assuming level API returns objects with 'name' property based on JS SDK analysis
-      // But let's check levels.js again.
-      // levels.js says: `SELECT id, name FROM levels`. Response: `data: [{id: 1, name: 'MSCE'}]`
       return data.map((e) => e['name'] as String).toList();
     });
   }
 
-  /// Get download URL for a resource (Paid plans only)
+  /// Search resources with plan-tiered filtering
+  ///
+  /// [q] Search query (required, min 2 characters)
+  /// [level] Filter by level (Basic+ plans)
+  /// [subject] Filter by subject (Basic+ plans)
+  /// [type] Filter by resource type (Pro+ plans)
+  /// [year] Filter by year (Pro+ plans)
+  /// [limit] Max results (capped by plan tier)
+  /// [offset] Pagination offset
+  /// [sort] Sort order - Enterprise only ('relevance', 'newest', 'oldest', 'title')
+  Future<Map<String, dynamic>> search({
+    required String q,
+    String? level,
+    String? subject,
+    String? type,
+    int? year,
+    int? limit,
+    int? offset,
+    String? sort,
+  }) async {
+    return _get('/search', {
+      'q': q,
+      'level': level,
+      'subject': subject,
+      'type': type,
+      'year': year,
+      'limit': limit,
+      'offset': offset,
+      'sort': sort,
+    }, (json) => json as Map<String, dynamic>);
+  }
+
+  /// Request a secure download token (paid plans only)
+  ///
+  /// Returns a map with 'token', 'expires_in_seconds', and 'download_url'
+  Future<Map<String, dynamic>> requestDownload(int resourceId) async {
+    return _post('/downloads/request', {'resourceId': resourceId});
+  }
+
+  /// Redeem a download token to get the signed file URL
+  ///
+  /// Returns a map with 'download_url', 'expires_in_seconds', and 'attempts_remaining'
+  Future<Map<String, dynamic>> redeemDownload(String token) async {
+    return _get('/downloads/$token', {}, (json) => json as Map<String, dynamic>);
+  }
+
+  /// Convenience: Request token and redeem in one call
+  ///
+  /// Returns the signed download URL string
+  Future<String> download(int resourceId) async {
+    final tokenData = await requestDownload(resourceId);
+    final downloadData = await redeemDownload(tokenData['token'] as String);
+    return downloadData['download_url'] as String;
+  }
+
+  /// @deprecated Use [requestDownload] + [redeemDownload] or [download] instead
+  @Deprecated('Use download() for the secure token flow')
   Future<String> downloadResource(int id) async {
     return _get('/resources/$id/download', {}, (json) {
       return json['download_url'] as String;

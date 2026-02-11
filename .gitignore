@@ -7,3 +7,8 @@ ios/Flutter/App.framework
 ios/Flutter/Flutter.framework
 linux/flutter/ephemeral
 web/flutter_service_worker.js
+
+# Sensitive files
+.env*
+local.properties
+.DS_Store
