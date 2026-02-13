@@ -254,6 +254,92 @@ try {
 
 ---
 
+### Resource Pricing
+
+Set custom prices on resources or mark them as free. Each developer's pricing is independent, identified by their API key.
+
+#### Set a Price
+
+```dart
+// Mark a resource as paid (500 MWK)
+final pricing = await client.setPrice(
+  resourceId: 101,
+  price: 500,
+  isFree: false,
+);
+print(pricing);
+// {resource_id: 101, price_mwk: 500, is_free: false}
+
+// Mark a resource as free
+await client.setPrice(resourceId: 101, isFree: true);
+```
+
+**Request:**
+- Method: `POST`
+- Endpoint: `/pricing/set`
+- Headers: `Authorization: Bearer API_KEY`
+- Body:
+  - `resourceId` (required): Resource ID
+  - `price` (optional): Price in MWK (ignored if `isFree` is true)
+  - `isFree` (optional): Set to `true` for free access
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "resource_id": 101,
+    "price_mwk": 500,
+    "is_free": false
+  }
+}
+```
+
+**Returns:** `Map<String, dynamic>` with `resource_id`, `price_mwk`, and `is_free`
+
+#### Get a Price
+
+```dart
+final pricing = await client.getPrice(101);
+print(pricing['is_free']);   // true or false
+print(pricing['price_mwk']); // price in MWK
+```
+
+**Request:**
+- Method: `GET`
+- Endpoint: `/pricing/{resourceId}`
+- Headers: `Authorization: Bearer API_KEY`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "resource_id": 101,
+    "price_mwk": 0,
+    "is_free": true
+  }
+}
+```
+
+If no price has been set, the resource defaults to free.
+
+**Returns:** `Map<String, dynamic>` with `resource_id`, `price_mwk`, and `is_free`
+
+**Download Enforcement:**
+
+When a resource has been priced (not free), download requests return `402 Payment Required`:
+
+```json
+{
+  "error": "This resource requires purchase before downloading.",
+  "code": "PAYMENT_REQUIRED",
+  "price_mwk": 500
+}
+```
+
+---
+
 ### Search Resources
 
 Search across all curriculum resources. Results and filter capabilities depend on your plan tier.
@@ -277,13 +363,13 @@ for (var item in results) {
 - Headers: `Authorization: Bearer API_KEY`
 - Query Parameters:
   - `q` (required): Search query (min 2 characters)
-  - `level` (optional): Filter by level — Basic+ plans only
-  - `subject` (optional): Filter by subject — Basic+ plans only
-  - `type` (optional): Filter by resource type — Pro+ plans only
-  - `year` (optional): Filter by year — Pro+ plans only
+  - `level` (optional): Filter by level -- Basic+ plans only
+  - `subject` (optional): Filter by subject -- Basic+ plans only
+  - `type` (optional): Filter by resource type -- Pro+ plans only
+  - `year` (optional): Filter by year -- Pro+ plans only
   - `limit` (optional): Max results (capped by plan tier)
   - `offset` (optional): Pagination offset
-  - `sort` (optional): Sort order — Enterprise only (`relevance`, `newest`, `oldest`, `title`)
+  - `sort` (optional): Sort order -- Enterprise only (`relevance`, `newest`, `oldest`, `title`)
 
 **Response:**
 ```json
@@ -330,6 +416,8 @@ try {
 } catch (e) {
   if (e.toString().contains('401')) {
     print('Invalid API key');
+  } else if (e.toString().contains('402')) {
+    print('Payment required for this resource');
   } else if (e.toString().contains('429')) {
     print('Rate limit exceeded');
   } else {
@@ -342,6 +430,7 @@ try {
 
 - `200` - Success
 - `401` - Unauthorized (invalid or missing API key)
+- `402` - Payment Required (resource has a price set)
 - `403` - Forbidden (subscription expired or insufficient permissions)
 - `404` - Resource not found
 - `429` - Rate limit exceeded

@@ -157,4 +157,32 @@ class MalawiCurriculumClient {
       return json['download_url'] as String;
     });
   }
+
+  /// Set or update pricing for a resource.
+  ///
+  /// [resourceId] ID of the resource to price.
+  /// [price] Price in MWK. Ignored if [isFree] is true.
+  /// [isFree] Set to true to make the resource free.
+  Future<Map<String, dynamic>> setPrice({
+    required int resourceId,
+    int? price,
+    bool? isFree,
+  }) async {
+    final response = await _post('/pricing/set', {
+      'resourceId': resourceId,
+      if (price != null) 'price': price,
+      if (isFree != null) 'isFree': isFree,
+    });
+    return response['data'] as Map<String, dynamic>;
+  }
+
+  /// Get the price set for a specific resource.
+  ///
+  /// Returns a map with 'resource_id', 'price_mwk', and 'is_free'.
+  /// Defaults to free if no price has been set.
+  Future<Map<String, dynamic>> getPrice(int resourceId) async {
+    return _get('/pricing/$resourceId', {}, (json) {
+      return json['data'] as Map<String, dynamic>;
+    });
+  }
 }
